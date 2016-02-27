@@ -38,6 +38,9 @@ Vagrant.configure(2) do |config|
 
     master1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
+    master1.vm.provision "shell" do |s|
+      s.inline = "subscription-manager register --force --username=#{ENV['REDHAT_USERNAME']} --password=#{ENV['REDHAT_PASSWORD']}"
+    end
   end
 
   # provision and enroll Atomic Hosts
@@ -53,6 +56,9 @@ Vagrant.configure(2) do |config|
 
       this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
+      this_host.vm.provision "shell" do |s|
+        s.inline = "subscription-manager register --force --username=#{ENV['REDHAT_USERNAME']} --password=#{ENV['REDHAT_PASSWORD']}"
+      end
     end
   end
 
