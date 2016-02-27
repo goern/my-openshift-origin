@@ -41,6 +41,9 @@ Vagrant.configure(2) do |config|
     master1.vm.provision "shell" do |s|
       s.inline = "subscription-manager register --force --username=#{ENV['REDHAT_USERNAME']} --password=#{ENV['REDHAT_PASSWORD']}"
     end
+
+    master1.vm.provision "shell", path: "./prerequisites.sh"
+
   end
 
   # provision and enroll Atomic Hosts
@@ -59,6 +62,9 @@ Vagrant.configure(2) do |config|
       this_host.vm.provision "shell" do |s|
         s.inline = "subscription-manager register --force --username=#{ENV['REDHAT_USERNAME']} --password=#{ENV['REDHAT_PASSWORD']}"
       end
+
+      this_host.vm.provision "shell", path: "./prerequisites.sh"
+
     end
   end
 
