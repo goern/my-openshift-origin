@@ -32,9 +32,9 @@ Vagrant.configure(2) do |config|
 
     nfs1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
-    nfs1.vm.provision "shell", path: "https://gist.githubusercontent.com/goern/fd9ad7c1484f0e351442/raw/661dfefa5eb8d4a75576e692e55b1f4317fdfdd6/nfs-server"
+    nfs1.vm.provision "shell", path: "configure-nfs-server.sh"
 
-    nfs1.vm.provision "shell", inline: "yum update -y"
+    nfs1.vm.provision "shell", inline: "yum update -y && yum clean all"
   end
 
   config.vm.define "master-1" do |master1|
@@ -61,7 +61,7 @@ Vagrant.configure(2) do |config|
 
     master1.vm.provision "shell", inline: "yum install -y docker"
     master1.vm.provision "shell", inline: "docker-storage-setup"
-    master1.vm.provision "shell", inline: "yum update -y"
+    master1.vm.provision "shell", inline: "yum update -y && yum clean all"
 
   end
 
@@ -87,7 +87,7 @@ Vagrant.configure(2) do |config|
       this_host.vm.provision "shell", inline: "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
       this_host.vm.provision "shell", inline: "yum install -y docker"
       this_host.vm.provision "shell", inline: "docker-storage-setup"
-      this_host.vm.provision "shell", inline: "yum update -y"
+      this_host.vm.provision "shell", inline: "yum update -y && yum clean all"
     end
   end
 
