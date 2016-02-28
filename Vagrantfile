@@ -21,19 +21,20 @@ Vagrant.configure(2) do |config|
     domain.cpus = 1
   end
 
-  config.vm.define "nfs-1" do |this_host|
-    this_host.vm.box = "centos/7"
-    this_host.vm.box_check_update = true
-    this_host.vm.hostname = "nfs-1.goern.example.com"
+  config.vm.define "nfs-1" do |nfs1|
+    nfs1.vm.box = "centos/7"
+    nfs1.vm.box_check_update = true
+    nfs1.vm.hostname = "nfs-1.goern.example.com"
 
     # a la https://stackoverflow.com/questions/33117939/vagrant-do-not-map-hostname-to-loopback-address-in-etc-hosts
-    this_host.vm.provision "shell", inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
-    this_host.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
+    nfs1.vm.provision "shell", inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
+    nfs1.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
 
-    this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+    nfs1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
-    this_host.vm.provision "shell", path: "https://gist.githubusercontent.com/goern/fd9ad7c1484f0e351442/raw/8478c623aaf1a52f15fc3bfec152139679ed31a8/nfs-server"
+    nfs1.vm.provision "shell", path: "https://gist.githubusercontent.com/goern/fd9ad7c1484f0e351442/raw/661dfefa5eb8d4a75576e692e55b1f4317fdfdd6/nfs-server"
 
+    nfs1.vm.provision "shell", inline: "yum update -y"
   end
 
   config.vm.define "master-1" do |master1|
@@ -51,20 +52,16 @@ Vagrant.configure(2) do |config|
       libvirt.driver = "kvm"
       libvirt.memory = 2048
       libvirt.cpus = 2
-      libvirt.storage :file, :size => '4G'
+      libvirt.storage :file, :size => '8G'
     end
 
     master1.vm.provision "shell" do |s|
       s.inline = "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
     end
 
-    master1.vm.provision "shell" do |s|
-      s.inline = "yum install -y docker"
-    end
-
-    master1.vm.provision "shell" do |s|
-      s.inline = "docker-storage-setup"
-    end
+    master1.vm.provision "shell", inline: "yum install -y docker"
+    master1.vm.provision "shell", inline: "docker-storage-setup"
+    master1.vm.provision "shell", inline: "yum update -y"
 
   end
 
@@ -84,19 +81,13 @@ Vagrant.configure(2) do |config|
         libvirt.driver = "kvm"
         libvirt.memory = 2048
         libvirt.cpus = 2
-        libvirt.storage :file, :size => '6G'
+        libvirt.storage :file, :size => '8G'
       end
 
-      this_host.vm.provision "shell" do |s|
-        s.inline = "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
-      end
-
-      this_host.vm.provision "shell" do |s|
-        s.inline = "yum install -y docker"
-      end
-
-      this_host.vm.provision "shell" do |s|
-        s.inline = "docker-storage-setup"
+      this_host.vm.provision "shell", inline: "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
+      this_host.vm.provision "shell", inline: "yum install -y docker"
+      this_host.vm.provision "shell", inline: "docker-storage-setup"
+      this_host.vm.provision "shell", inline: "yum update -y"
       end
     end
   end
