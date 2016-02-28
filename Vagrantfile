@@ -88,7 +88,6 @@ Vagrant.configure(2) do |config|
       this_host.vm.provision "shell", inline: "yum install -y docker"
       this_host.vm.provision "shell", inline: "docker-storage-setup"
       this_host.vm.provision "shell", inline: "yum update -y"
-      end
     end
   end
 
