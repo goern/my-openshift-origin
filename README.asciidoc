@@ -10,12 +10,12 @@ must be installed too.
 
 10GiB of free RAM and a little bit of disk space should be available.
 
-The host needs to have internet access, as some of the provision scripts are
-hosted on github.
+The host needs to have internet access as it will download RPMs and docker
+container images.
 
 == Preparation
 
-`git clone --recursive <repourl>`
+`git clone --recursive https://github.com/goern/my-openshift-origin-centos7`
 
 == Usage
 
