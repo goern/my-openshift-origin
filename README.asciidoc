@@ -22,13 +22,40 @@ container images.
 `vagrant up --no-parallel` will do the trick, let an easy `ansible-playbook -i inventory.ini --private-key=~/.vagrant.d/insecure_private_key openshift-ansible/playbooks/byo/config.yml`
 follow.
 
-WARNING: This will take about x hrs to finish, given you have a high bandwidth
-internet connection and a reasonable fast disk.
+WARNING: This will take about 1.x5 hrs to finish, given you have a high bandwidth
+internet connection and a reasonable fast disk. This is approx. 1 hour for `vagrant up`
+and additional 20 minutes per each ansible run.
 
 === OpenShift Origin Web Console
 
 You should be able to access the web console at http://master-1.goern.example.com:8443/
 using any user or password. The OpenShift master is configured to do a 'allow_all'
 authentication.
+
+== Known Issues
+
+=== dnsIP of Nodes
+
+The configuration item dnsIP is not set on any node, therefor the kubelet is
+trying to resolve IP addresses via the host resolver, which is pointing to
+the host all the Vagrant VMs run on (aka gateway).
+
+==== workaround
+
+First bring up the master, figure out its IP address and set openshift_dns_ip in
+the inventory.ini accordingly.
+
+=== pod node label selector conflicts with its project node label selector
+
+see https://lists.openshift.redhat.com/openshift-archives/users/2016-February/msg00036.html
+
+=== no cluster-admin
+
+As we use the allow_all auth method, there needs to be one cluster admin.
+
+==== workaround
+
+Use `oadm policy add-cluster-role-to-user cluster-admin admin` to assign this
+role to the admin user. Use admin as login on the web console.
 
 == References
