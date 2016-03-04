@@ -1,17 +1,20 @@
-= This is (my) OpenShift Origin on CentOS7
+= This is (my) OpenShift Enterprise 3.1 on RHEL7
 Christoph Görn <goern@redhat.com>
-0.1.0, 2016-02-28
+0.2.0, 2016-03-04
 
 == Prerequisites
 
 This demo requires https://vagrantup.com/[Vagrant] and libvirt to be installed.
 The Vagrant plugin https://github.com/smdahlen/vagrant-hostmanager[hostmanager]
+and https://github.com/projectatomic/adb-vagrant-registration[vagrant-registration]
 must be installed too.
 
 10GiB of free RAM and a little bit of disk space should be available.
 
 The host needs to have internet access as it will download RPMs and docker
 container images.
+
+You need to have a valid subscription for OpenShift Enterprise 3 by Red Hat.
 
 == Preparation
 
@@ -26,7 +29,7 @@ WARNING: This will take about 1.x5 hrs to finish, given you have a high bandwidt
 internet connection and a reasonable fast disk. This is approx. 1 hour for `vagrant up`
 and additional 20 minutes per each ansible run.
 
-=== OpenShift Origin Web Console
+=== OpenShift Enterprise Web Console
 
 You should be able to access the web console at http://master-1.goern.example.com:8443/
 using any user or password. The OpenShift master is configured to do a 'allow_all'

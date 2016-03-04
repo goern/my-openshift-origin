@@ -2,7 +2,8 @@
 
 # This reuses https://access.redhat.com/solutions/2147871
 
-sudo yum install -y nfs-utils
+sudo yum install -y nfs-utils && \
+sudo yum clean all
 
 sudo mkdir -p /srv/nfs/registry /srv/nfs/vol0001 /srv/nfs/vol0002 /srv/nfs/vol0003
 sudo chmod 777 /srv/nfs/registry /srv/nfs/vol0001 /srv/nfs/vol0002 /srv/nfs/vol0003
