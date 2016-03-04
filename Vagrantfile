@@ -9,6 +9,10 @@ Vagrant.configure(2) do |config|
     raise 'vagrant-hostmanager is not installed! see https://github.com/smdahlen/vagrant-hostmanager'
   end
 
+  if Vagrant.has_plugin?('vagrant-registration')
+    config.registration.skip = true
+  end
+
   # and configure the hostmanager plugin
   config.hostmanager.enabled = true
   config.hostmanager.manage_host = true
@@ -88,14 +92,13 @@ Vagrant.configure(2) do |config|
 
   3.times do |n|
     config.vm.define "node-#{n}" do |this_host|
-      this_host.vm.box = "centos/7"
-      this_host.vm.box_check_update = false
+      this_host.vm.box = "centos/atomic-host"
+      this_host.vm.box_check_update = true
       this_host.vm.hostname = "node-#{n}.goern.example.com"
 
       # a la https://stackoverflow.com/questions/33117939/vagrant-do-not-map-hostname-to-loopback-address-in-etc-hosts
       this_host.vm.provision "shell", inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
       this_host.vm.provision "shell", inline: "echo '127.0.0.1 localhost localhost.localdomain' > /etc/hosts"
-      this_host.vm.provision "shell", inline: "cp /usr/share/zoneinfo/UTC -f /etc/localtime"
 
       this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
@@ -107,9 +110,6 @@ Vagrant.configure(2) do |config|
       end
 
       this_host.vm.provision "shell", inline: "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
-      this_host.vm.provision "shell", inline: "yum install -y docker"
-      this_host.vm.provision "shell", inline: "docker-storage-setup"
-      this_host.vm.provision "shell", inline: "yum update -y && yum clean all"
     end
   end
 

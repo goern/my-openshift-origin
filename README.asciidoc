@@ -26,6 +26,9 @@ WARNING: This will take about 1.x5 hrs to finish, given you have a high bandwidt
 internet connection and a reasonable fast disk. This is approx. 1 hour for `vagrant up`
 and additional 20 minutes per each ansible run.
 
+TIP: If you want to bring down the time vagrant needs to bring up the VM, check
+if there are newer box versions, so that yum doesnt have to update that much.
+
 === OpenShift Origin Web Console
 
 You should be able to access the web console at http://master-1.goern.example.com:8443/
