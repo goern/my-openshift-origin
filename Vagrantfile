@@ -25,18 +25,27 @@ Vagrant.configure(2) do |config|
     domain.cpus = 1
   end
 
+  config.vm.define "idm-1" do |idm1|
+    idm1.vm.box = "centos/7"
+    idm1.vm.box_check_update = true
+    idm1.vm.hostname = "idm-1.goern.example.com"
+
+    idm1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+
+    idm1.vm.provision "shell", path: "common-configuration.sh"
+    idm1.vm.provision "shell", path: "provision-idm-server.sh"
+
+    idm1.vm.provision "shell", inline: "yum update -y && yum clean all"
+  end
+
   config.vm.define "nfs-1" do |nfs1|
     nfs1.vm.box = "centos/7"
     nfs1.vm.box_check_update = true
     nfs1.vm.hostname = "nfs-1.goern.example.com"
 
-    # a la https://stackoverflow.com/questions/33117939/vagrant-do-not-map-hostname-to-loopback-address-in-etc-hosts
-    nfs1.vm.provision "shell", inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
-    nfs1.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
-    nfs1.vm.provision "shell", inline: "cp /usr/share/zoneinfo/UTC -f /etc/localtime"
-
     nfs1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
+    nfs1.vm.provision "shell", path: "common-configuration.sh"
     nfs1.vm.provision "shell", path: "configure-nfs-server.sh"
 
     nfs1.vm.provision "shell", inline: "yum update -y && yum clean all"
@@ -47,12 +56,9 @@ Vagrant.configure(2) do |config|
     lb1.vm.box_check_update = true
     lb1.vm.hostname = "master.goern.example.com"
 
-    # a la https://stackoverflow.com/questions/33117939/vagrant-do-not-map-hostname-to-loopback-address-in-etc-hosts
-    lb1.vm.provision "shell", inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
-    lb1.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
-    lb1.vm.provision "shell", inline: "cp /usr/share/zoneinfo/UTC -f /etc/localtime"
-
     lb1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+
+    lb1.vm.provision "shell", path: "common-configuration.sh"
 
     lb1.vm.provision "shell", inline: "yum update -y && yum clean all"
   end
@@ -65,11 +71,6 @@ Vagrant.configure(2) do |config|
 
       this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
-      # a la https://stackoverflow.com/questions/33117939/vagrant-do-not-map-hostname-to-loopback-address-in-etc-hosts
-      this_host.vm.provision "shell", inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
-      this_host.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
-      this_host.vm.provision "shell", inline: "cp /usr/share/zoneinfo/UTC -f /etc/localtime"
-
       this_host.vm.provider "libvirt" do |libvirt|
         libvirt.driver = "kvm"
         libvirt.memory = 1024
@@ -77,11 +78,13 @@ Vagrant.configure(2) do |config|
         libvirt.storage :file, :size => '8G'
       end
 
+      this_host.vm.provision "shell", path: "common-configuration.sh"
+
       this_host.vm.provision "shell" do |s|
         s.inline = "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
       end
 
-      this_host.vm.provision "shell", inline: "yum install -y ntp docker"
+      this_host.vm.provision "shell", inline: "yum install -y docker"
       this_host.vm.provision "shell", inline: "docker-storage-setup"
       this_host.vm.provision "shell", inline: "yum update -y && yum clean all"
 
