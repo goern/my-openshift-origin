@@ -7,7 +7,7 @@ CEPH_OSDS=3
 DEPLOY_IDM=false
 OPENSHIFT_MASTERS=1
 OPENSHIFT_NODES=2
-OPENSHIFT_NODES_ATOMIC=true
+OPENSHIFT_NODES_ATOMIC=false
 
 Vagrant.configure(2) do |config|
   config.ssh.insert_key = false
