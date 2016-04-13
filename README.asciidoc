@@ -17,17 +17,37 @@ container images.
 
 `git clone --recursive https://github.com/goern/my-openshift-origin-centos7`
 
+TIP: To let ansible do a smoth job, you might consider `export ANSIBLE_HOST_KEY_CHECKING=False`.
+
+== Configuration
+
+Please have a look at the top of the Vagrantfile, it carries a section you could
+use to configure you OpenShift Origin environment:
+
+[source, bash]
+----
+DEPLOY_CEPH=false
+CEPH_MONS=3
+CEPH_OSDS=3
+DEPLOY_IDM=false
+OPENSHIFT_MASTERS=1
+OPENSHIFT_NODES=2
+OPENSHIFT_NODES_ATOMIC=true
+----
+
 == Usage
 
 `vagrant up --no-parallel` will do the trick, let an easy `ansible-playbook -i inventory.ini --private-key=~/.vagrant.d/insecure_private_key openshift-ansible/playbooks/byo/config.yml`
 follow.
 
-WARNING: This will take about 1.x5 hrs to finish, given you have a high bandwidth
+WARNING: This will take about 1.x hrs to finish, given you have a high bandwidth
 internet connection and a reasonable fast disk. This is approx. 1 hour for `vagrant up`
 and additional 20 minutes per each ansible run.
 
 TIP: If you want to bring down the time vagrant needs to bring up the VM, check
 if there are newer box versions, so that yum doesnt have to update that much.
+
+You should now deploy a https://docs.openshift.org/latest/install_config/install/deploy_router.html#creating-the-router-service-account[router] and a registry.
 
 === OpenShift Origin Web Console
 

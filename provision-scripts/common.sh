@@ -6,4 +6,6 @@ sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hos
 cp /usr/share/zoneinfo/UTC -f /etc/localtime
 
 sudo yum install -y deltarpm && \
-sudo yum install -y ntp
+sudo yum install -y ntp && \
+yum update -y && \
+yum clean all
