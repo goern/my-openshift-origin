@@ -86,6 +86,8 @@ Vagrant.configure(2) do |config|
       lb1.vm.provision "shell", path: "common-configuration.sh"
 
       lb1.vm.provision "shell", inline: "yum update -y && yum clean all"
+
+      lb1.vm.network "forwarded_port", guest: 8443, host: 8443 
     end
   end
 
@@ -109,6 +111,9 @@ Vagrant.configure(2) do |config|
 
       this_host.vm.provision "shell", inline: "mkdir -p /etc/origin/master && echo 'admin:$apr1$NRX9JJxb$kqO2v6n5fLCN2M8cZ0vu10' >/etc/origin/master/htpasswd"
 
+      if OPENSHIFT_MASTERS == 1
+        this_host.vm.network "forwarded_port", guest: 8443, host_ip: '', host: 8443 
+      end
     end
   end
 
