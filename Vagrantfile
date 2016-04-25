@@ -47,33 +47,33 @@ Vagrant.configure(2) do |config|
     nfs1.vm.provision "shell", inline: "yum update -y && yum clean all"
   end
 
-    config.vm.define "master-1" do |this_host|
-      this_host.vm.box = "rhel-7.1"
-      this_host.vm.box_check_update = true
-      this_host.vm.hostname = "master-1.goern.example.com"
+  config.vm.define "master-1" do |this_host|
+    this_host.vm.box = "rhel-7.1"
+    this_host.vm.box_check_update = true
+    this_host.vm.hostname = "master-1.goern.example.com"
 
-      this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+    this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
-      this_host.vm.provision "shell", path: "common-configuration.sh"
+    this_host.vm.provision "shell", path: "common-configuration.sh"
 
-      this_host.vm.provider "libvirt" do |libvirt|
-        libvirt.driver = "kvm"
-        libvirt.memory = 1024
-        libvirt.cpus = 2
-        libvirt.storage :file, :size => '8G'
-      end
-
-      this_host.vm.provision "shell" do |s|
-        s.inline = "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
-      end
-
-      this_host.vm.provision "shell", inline: "yum install -y docker"
-#      this_host.vm.provision "shell", inline: "docker-storage-setup"
-      this_host.vm.provision "shell", inline: "yum update -y && yum clean all"
-
-      this_host.vm.provision "shell", inline: "mkdir -p /etc/origin/master && echo 'admin:$apr1$NRX9JJxb$kqO2v6n5fLCN2M8cZ0vu10' >/etc/origin/master/htpasswd"
-
+    this_host.vm.provider "libvirt" do |libvirt|
+      libvirt.driver = "kvm"
+      libvirt.memory = 1024
+      libvirt.cpus = 2
+      libvirt.storage :file, :size => '8G'
     end
+
+    this_host.vm.provision "shell" do |s|
+      s.inline = "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
+    end
+
+    this_host.vm.provision "shell", inline: "yum install -y docker"
+#      this_host.vm.provision "shell", inline: "docker-storage-setup"
+    this_host.vm.provision "shell", inline: "yum update -y && yum clean all"
+
+    this_host.vm.provision "shell", inline: "mkdir -p /etc/origin/master && echo 'admin:$apr1$NRX9JJxb$kqO2v6n5fLCN2M8cZ0vu10' >/etc/origin/master/htpasswd"
+
+  end
 
   3.times do |n|
     config.vm.define "node-#{n}" do |this_host|
