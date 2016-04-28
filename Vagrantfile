@@ -1,6 +1,11 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+DEPLOY_IDM=false
+OPENSHIFT_MASTERS=1
+OPENSHIFT_NODES=2
+OPENSHIFT_DOMAINNAME='goern.example.com'
+
 Vagrant.configure(2) do |config|
   config.ssh.insert_key = false
 
@@ -29,59 +34,78 @@ Vagrant.configure(2) do |config|
     domain.cpus = 1
   end
 
-  config.vm.define "nfs-1" do |nfs1|
-    nfs1.vm.box = "rhel-7.1"
-    nfs1.vm.box_check_update = true
-    nfs1.vm.hostname = "nfs-1.goern.example.com"
-
-    # a la https://stackoverflow.com/questions/33117939/vagrant-do-not-map-hostname-to-loopback-address-in-etc-hosts
-    nfs1.vm.provision "shell", inline: "hostname --fqdn > /etc/hostname && hostname -F /etc/hostname"
-    nfs1.vm.provision "shell", inline: "sed -ri 's/127\.0\.0\.1\s.*/127.0.0.1 localhost localhost.localdomain/' /etc/hosts"
-    nfs1.vm.provision "shell", inline: "cp -f /usr/share/zoneinfo/UTC /etc/localtime"
-
-    nfs1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
-
-    nfs1.vm.provision "shell", path: "common-configuration.sh"
-    nfs1.vm.provision "shell", path: "configure-nfs-server.sh"
-
-    nfs1.vm.provision "shell", inline: "yum update -y && yum clean all"
-  end
-
-  config.vm.define "master-1" do |this_host|
+  config.vm.define "nfs-1" do |this_host|
     this_host.vm.box = "rhel-7.1"
     this_host.vm.box_check_update = true
-    this_host.vm.hostname = "master-1.goern.example.com"
+    this_host.vm.hostname = "nfs-1.#{OPENSHIFT_DOMAINNAME}"
 
     this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
-    this_host.vm.provision "shell", path: "common-configuration.sh"
-
-    this_host.vm.provider "libvirt" do |libvirt|
-      libvirt.driver = "kvm"
-      libvirt.memory = 1024
-      libvirt.cpus = 2
-      libvirt.storage :file, :size => '8G'
-    end
-
-    this_host.vm.provision "shell" do |s|
-      s.inline = "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
-    end
-
-    this_host.vm.provision "shell", inline: "yum install -y docker"
-#      this_host.vm.provision "shell", inline: "docker-storage-setup"
-    this_host.vm.provision "shell", inline: "yum update -y && yum clean all"
-
-    this_host.vm.provision "shell", inline: "mkdir -p /etc/origin/master && echo 'admin:$apr1$NRX9JJxb$kqO2v6n5fLCN2M8cZ0vu10' >/etc/origin/master/htpasswd"
-
+    this_host.vm.provision "shell", path: "provision-scripts/common.sh"
+    this_host.vm.provision "shell", path: "provision-scripts/nfs-server.sh"
   end
 
-  3.times do |n|
+  if OPENSHIFT_MASTERS > 1
+    config.vm.define "lb-1" do |lb1|
+      lb1.vm.box = "rhel-7.1"
+      lb1.vm.box_check_update = true
+      lb1.vm.hostname = "master.#{OPENSHIFT_DOMAINNAME}"
+
+      lb1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+
+      lb1.vm.provider :libvirt do |domain|
+        domain.memory = 512
+        domain.cpus = 1
+      end
+
+      lb1.vm.provision "shell", path: "common-configuration.sh"
+
+      lb1.vm.provision "shell", inline: "yum update -y && yum clean all"
+
+      lb1.vm.network "forwarded_port", guest: 8443, host: 8443
+    end
+  end
+
+  OPENSHIFT_MASTERS.times do |n|
+    config.vm.define "master-#{n}" do |this_host|
+      this_host.vm.box = "rhel-7.1"
+      this_host.vm.box_check_update = true
+      this_host.vm.hostname = "master-#{n}.#{OPENSHIFT_DOMAINNAME}"
+
+      this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+
+      this_host.vm.provision "shell", path: "provision-scripts/common.sh"
+
+      this_host.vm.provider "libvirt" do |libvirt|
+        libvirt.driver = "kvm"
+        libvirt.memory = 1024
+        libvirt.cpus = 2
+        libvirt.storage :file, :size => '8G'
+      end
+
+      this_host.vm.provision "shell" do |s|
+        s.inline = "echo 'DEVS=\"/dev/vdb\"' > /etc/sysconfig/docker-storage-setup"
+      end
+
+      this_host.vm.provision "shell", inline: "yum install -y docker"
+  #      this_host.vm.provision "shell", inline: "docker-storage-setup"
+      this_host.vm.provision "shell", inline: "yum update -y && yum clean all"
+
+      this_host.vm.provision "shell", inline: "mkdir -p /etc/origin/master && echo 'admin:$apr1$NRX9JJxb$kqO2v6n5fLCN2M8cZ0vu10' >/etc/origin/master/htpasswd"
+
+      if OPENSHIFT_MASTERS == 1
+        this_host.vm.network "forwarded_port", guest: 8443, host_ip: '0.0.0.0', host: 8443
+      end
+    end
+  end
+
+  OPENSHIFT_NODES.times do |n|
     config.vm.define "node-#{n}" do |this_host|
       this_host.vm.box = "rhel-7.1"
       this_host.vm.box_check_update = false
-      this_host.vm.hostname = "node-#{n}.goern.example.com"
+      this_host.vm.hostname = "node-#{n}.#{OPENSHIFT_DOMAINNAME}"
 
-      this_host.vm.provision "shell", path: "common-configuration.sh"
+      this_host.vm.provision "shell", path: "provision-scripts/common.sh"
 
       this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 

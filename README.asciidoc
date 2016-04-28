@@ -1,6 +1,6 @@
 = This is (my) OpenShift Enterprise 3.1 on RHEL7
 Christoph Görn <goern@redhat.com>
-0.2.0, 2016-03-04
+0.3.0, 2016-04-25
 
 == Prerequisites
 
@@ -18,7 +18,7 @@ You need to have a valid subscription for OpenShift Enterprise 3 by Red Hat.
 
 == Preparation
 
-`git clone --recursive https://github.com/goern/my-openshift-origin-centos7`
+`git clone --recursive https://github.com/goern/my-openshift-origin`
 
 == Usage
 
