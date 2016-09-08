@@ -37,7 +37,7 @@ OPENSHIFT_NODES_ATOMIC=true
 
 == Usage
 
-`vagrant up --no-parallel` will do the trick, let an easy `ansible-playbook -i inventory.ini --private-key=~/.vagrant.d/insecure_private_key openshift-ansible/playbooks/byo/config.yml`
+`vagrant up --no-parallel` will do the trick, let an easy `ansible-playbook --user=vagrant --become --become-user=root --inventory inventory.ini --private-key=~/.vagrant.d/insecure_private_key openshift-ansible/playbooks/byo/config.yml `
 follow.
 
 WARNING: This will take about 1.x hrs to finish, given you have a high bandwidth
@@ -51,7 +51,7 @@ You should now deploy a https://docs.openshift.org/latest/install_config/install
 
 === OpenShift Origin Web Console
 
-You should be able to access the web console at http://master-1.goern.example.com:8443/
+You should be able to access the web console at http://master-0.goern.example.com:8443/
 using any user or password. The OpenShift master is configured to do a 'allow_all'
 authentication.
 
