@@ -109,7 +109,7 @@ Vagrant.configure(2) do |config|
           libvirt.driver = "kvm"
           libvirt.memory = 2048
           libvirt.cpus = 2
-          libvirt.storage :file, :size => '8G'
+          libvirt.storage :file, :size => '16G'
         end
 
         this_host.vm.provision "shell", path: "provision-scripts/common.sh"
@@ -140,7 +140,7 @@ Vagrant.configure(2) do |config|
           libvirt.driver = "kvm"
           libvirt.memory = 2048
           libvirt.cpus = 2
-          libvirt.storage :file, :size => '8G'
+          libvirt.storage :file, :size => '18G'
         end
 
         if !OPENSHIFT_NODES_ATOMIC
