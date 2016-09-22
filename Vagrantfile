@@ -4,13 +4,15 @@
 DEPLOY_IDM=false
 DEPLOY_CEPH=false
 DEPLOY_OPENSHIFT_ORIGIN=true
+DEPLOY_GLUSTER=false
 
 CEPH_MONS=3
 CEPH_OSDS=3
 
 OPENSHIFT_MASTERS=1
-OPENSHIFT_NODES=2
+OPENSHIFT_NODES=3
 OPENSHIFT_NODES_ATOMIC=false
+GLUSTER_NODES=1
 
 Vagrant.configure(2) do |config|
   config.ssh.insert_key = false
@@ -145,6 +147,34 @@ Vagrant.configure(2) do |config|
 
         if !OPENSHIFT_NODES_ATOMIC
           this_host.vm.provision "shell", path: "provision-scripts/common.sh"
+          this_host.vm.provision "shell", path: "provision-scripts/docker.sh"
+        end
+      end
+    end
+
+    if DEPLOY_GLUSTER
+      GLUSTER_NODES.times do |n|
+        config.vm.define "gluster-node-#{n}" do |this_host|
+          this_host.vm.box = "centos/7"
+          this_host.vm.box_check_update = true
+
+          this_host.vm.hostname = "gluster-node-#{n}.goern.example.com"
+
+          this_host.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+
+          this_host.vm.provider "libvirt" do |libvirt|
+            libvirt.driver = "kvm"
+            libvirt.memory = 2048
+            libvirt.cpus = 2
+
+            # this is vdb for docker
+            libvirt.storage :file, :size => '8G'
+            # this is for gluster itself
+            libvirt.storage :file, :size => '16G'
+          end
+
+          this_host.vm.provision "shell", path: "provision-scripts/common.sh"
+
           this_host.vm.provision "shell", path: "provision-scripts/docker.sh"
         end
       end
