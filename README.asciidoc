@@ -37,7 +37,7 @@ OPENSHIFT_NODES_ATOMIC=true
 
 == Usage
 
-`vagrant up --no-parallel` will do the trick, let an easy `ansible-playbook --user=vagrant --become --become-user=root --inventory inventory.ini --private-key=~/.vagrant.d/insecure_private_key openshift-ansible/playbooks/byo/config.yml `
+`vagrant up --no-parallel` will do the trick, let an easy `ansible-playbook --user=vagrant --become --become-user=root --inventory inventory.ini --private-key=~/.vagrant.d/insecure_private_key openshift-ansible/playbooks/byo/config.yml`
 follow.
 
 WARNING: This will take about 1.x hrs to finish, given you have a high bandwidth
