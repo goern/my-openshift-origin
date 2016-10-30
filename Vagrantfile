@@ -5,6 +5,7 @@ DEPLOY_IDM=false
 DEPLOY_CEPH=false
 DEPLOY_OPENSHIFT_ORIGIN=true
 DEPLOY_GLUSTER=false
+DEPLOY_ARTIFACTORY=false
 
 CEPH_MONS=3
 CEPH_OSDS=3
@@ -37,6 +38,27 @@ Vagrant.configure(2) do |config|
     domain.memory = 1024
     domain.cpus = 1
   end
+
+  if not DEPLOY_ARTIFACTORY
+    config.vm.define "artifactory" do |artifactory|
+      artifactory.vm.box = "centos/7"
+      artifactory.vm.box_check_update = true
+      artifactory.vm.hostname = "artifactory.goern.example.com"
+
+      artifactory.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+
+      artifactory.vm.provider "libvirt" do |libvirt|
+        libvirt.driver = "kvm"
+        libvirt.memory = 2048
+        libvirt.cpus = 2
+      end
+
+      artifactory.vm.provision "shell", path: "provision-scripts/common.sh"
+      artifactory.vm.provision "shell", path: "provision-scripts/artifactory.sh"
+
+      artifactory.vm.network "forwarded_port", guest: 8081, host: 8081
+    end
+  end # artifactory
 
   if DEPLOY_IDM
     config.vm.define "idm-1" do |idm1|
