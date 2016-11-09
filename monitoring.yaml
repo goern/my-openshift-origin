@@ -1,0 +1,63 @@
+---
+  - hosts: all
+
+    tasks:
+      - debug: msg="lame"
+
+  - hosts: monitoring_servers
+    roles:
+      - role: icinga2-ansible-no-ui
+        icinga2_conf_global: |
+          include "constants.conf"
+          include "zones.conf"
+          include <itl>
+          include <plugins>
+          include "features-enabled/*.conf"
+          include_recursive "conf.d"
+        check_commands:
+          check_nrpe: |
+            "-H", "$address$",
+            "-c", "$remote_nrpe_command$",
+        tags: icinga2-no-ui
+
+      - role: icinga2-ansible-web2-ui
+        icinga2_db: "icinga2"
+        icinga2_db_user: "icinga2"
+        icinga2_db_pass: "password"
+        icinga2_web2_db_pass: "password"
+        icinga2_ido_mysql_configuration: |
+         library "db_ido_mysql"
+
+         object IdoMysqlConnection "ido-mysql" {
+           user = "{{ icinga2_db_user }}"
+           password = "{{ icinga2_db_pass }}"
+           host = "localhost"
+           database = "{{ icinga2_db }}"
+         }
+        tags: icinga2-ansible-web2-ui
+
+      - role: icinga2-ansible-add-hosts
+        configuration_logic: "object"
+        host_attributes: |
+         check_command = "http"
+         vars.sla = "24x7"
+         vars.operator = "on_call"
+        host_checks: |
+         object Service "load_average" {
+           host_name = "{{ hostvars[item]['ansible_fqdn'] }}"
+           check_command = "check_nrpe"
+           vars.remote_nrpe_command = "check_load"
+         }
+
+         object Service "disk" {
+           host_name = "{{ hostvars[item]['ansible_fqdn'] }}"
+           check_command = "check_nrpe"
+           vars.remote_nrpe_command = "check_disk"
+         }
+
+         object Service "http" {
+           host_name = "{{ hostvars[item]['ansible_fqdn'] }}"
+           check_command = "http"
+           vars.http_vhost = "{{ hostvars[item]['ansible_domain'] }}"
+         }
+        tags: add-hosts
