@@ -5,7 +5,8 @@ DEPLOY_IDM=false
 DEPLOY_CEPH=false
 DEPLOY_OPENSHIFT_ORIGIN=true
 DEPLOY_GLUSTER=false
-DEPLOY_ARTIFACTORY=false
+DEPLOY_ARTIFACTORY=true
+DEPLOY_ICINGA2=true
 
 CEPH_MONS=3
 CEPH_OSDS=3
@@ -39,7 +40,28 @@ Vagrant.configure(2) do |config|
     domain.cpus = 1
   end
 
-  if not DEPLOY_ARTIFACTORY
+  if DEPLOY_ICINGA2
+    config.vm.define "icinga2" do |icinga2|
+      icinga2.vm.box = "centos/7"
+      icinga2.vm.box_check_update = true
+      icinga2.vm.hostname = "icinga2.goern.example.com"
+
+      icinga2.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
+
+      icinga2.vm.provider "libvirt" do |libvirt|
+        libvirt.driver = "kvm"
+        libvirt.memory = 2048
+        libvirt.cpus = 2
+      end
+
+      icinga2.vm.provision "shell", path: "provision-scripts/common.sh"
+      icinga2.vm.provision "shell", path: "provision-scripts/epel.sh"
+
+      icinga2.vm.network "forwarded_port", guest: 8081, host: 8081
+    end
+  end
+
+  if DEPLOY_ARTIFACTORY
     config.vm.define "artifactory" do |artifactory|
       artifactory.vm.box = "centos/7"
       artifactory.vm.box_check_update = true
@@ -90,7 +112,7 @@ Vagrant.configure(2) do |config|
       nfs1.vm.synced_folder ".", "/home/vagrant/sync", disabled: true
 
       nfs1.vm.provider :libvirt do |domain|
-        domain.memory = 512
+        domain.memory = 768
         domain.cpus = 1
       end
 
